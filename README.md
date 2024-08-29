@@ -44,6 +44,13 @@ Run the Docker container with the necessary environment variables:
 ```sh 
 docker run -e KIBANA_URL=<KIBANA_URL> -e API_KEY=<API_KEY> schmiddim/kibana-alert-exporter 
 ```  
+## Helm Chart
+To deploy the exporter using Helm, use the following commands:
+```sh
+helm repo add schmiddim https://schmiddim.github.io/helm-charts/
+helm repo update
+helm upgrade kibana-alert-exporter schmiddim/kibana-alert-exporter --install
+```
 
 # Configuration
 The following environment variables can be set to configure the exporter:  
