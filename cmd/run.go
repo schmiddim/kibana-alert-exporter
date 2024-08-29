@@ -9,9 +9,13 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"net/http"
+	"time"
 )
 
 var port = 9101
+
+var startTime = time.Now()
+var waitReadinessTime = time.Duration(10 * time.Second)
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -31,6 +35,14 @@ to quickly create a Cobra application.`,
 
 		fmt.Println(fmt.Sprintf("http://localhost:%d/metrics", port))
 		http.Handle("/metrics", promhttp.Handler())
+
+		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			if time.Since(startTime) > waitReadinessTime {
+				w.WriteHeader(200)
+			} else {
+				w.WriteHeader(503)
+			}
+		})
 		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 
 	},

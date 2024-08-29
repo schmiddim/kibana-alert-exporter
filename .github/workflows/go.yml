@@ -21,14 +21,14 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-      #      - name: Build
-      #        run: go build -v -o exporter .
-      #      - name: Test
-      #        run: go test -v -coverprofile cover.out ./...
-      #      - name: Upload coverage reports to Codecov
-      #        uses: codecov/codecov-action@v4
-      #        with:
-      #          token: ${{ secrets.CODECOV_TOKEN }}
+            - name: Build
+              run: go build -v -o exporter .
+            - name: Test
+              run: go test -v -coverprofile cover.out ./...
+            - name: Upload coverage reports to Codecov
+              uses: codecov/codecov-action@v4
+              with:
+                token: ${{ secrets.CODECOV_TOKEN }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to DockerHub
@@ -46,7 +46,6 @@ jobs:
             echo "ref=$REF" >> $GITHUB_ENV
           fi
           echo "commit_id=$COMMIT_ID" >> $GITHUB_ENV
-
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
