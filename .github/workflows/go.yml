@@ -39,7 +39,8 @@ jobs:
       - name: Extract branch or tag name
         run: |
           REF=$(echo ${GITHUB_REF#refs/*/})
-          if [[ "$REF" == "main" ]]; then
+          COMMIT_ID=${GITHUB_SHA}
+          if [[ "$REF" == "master" ]]; then
             echo "ref=latest" >> $GITHUB_ENV
           else
             echo "ref=$REF" >> $GITHUB_ENV
@@ -59,8 +60,8 @@ jobs:
           context: .
           push: true
           tags: |
-            schmiddim/kibana-alert-exporter:ref${{ env.ref }}
-            schmiddim/kibana-alert-exporter:comm${{ env.commit_id }}
+            schmiddim/kibana-alert-exporter:${{ env.ref }}
+            schmiddim/kibana-alert-exporter:${{ env.commit_id }}
           platforms: linux/amd64 #,linux/arm64
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
