@@ -30,7 +30,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		kibanaClient := kibana_api.NewKibanaClient(kibanaUrl, kibanaAuthToken, insecureTLS)
 
-		foo := prometheus_api.NewKibanaCollector(*kibanaClient)
+		foo := prometheus_api.NewKibanaCollector(kibanaClient)
 		prometheus.MustRegister(foo)
 
 		fmt.Println(fmt.Sprintf("http://localhost:%d/metrics", port))

@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+type KclientInterface interface {
+	GetRules() []*AlertRule
+	GetAlertingHealth() AlertingHealthResponse
+}
+
 type Config struct {
 	KibanaBaseUri string
 	ApiKey        string
@@ -61,7 +66,7 @@ func (c *Kclient) newRequest(endpoint string, method string) *http.Request {
 	return req
 }
 
-func NewKibanaClient(baseUri string, apiKey string, insecure bool) *Kclient {
+func NewKibanaClient(baseUri string, apiKey string, insecure bool) KclientInterface {
 
 	if strings.HasSuffix(baseUri, "/") == false {
 		baseUri += "/"

@@ -4,7 +4,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -16,16 +15,11 @@ type HealthWrapper struct {
 	descRecoveredAlert *prometheus.Desc
 }
 
-func (hw *HealthWrapper) getId() string {
-	return strings.ReplaceAll(hw.alertRule.Id, "-", "_")
-
-}
-
 type KibanaCollector struct {
-	kClient kibana_api.Kclient
+	kClient kibana_api.KclientInterface
 }
 
-func NewKibanaCollector(kclient kibana_api.Kclient) *KibanaCollector {
+func NewKibanaCollector(kclient kibana_api.KclientInterface) *KibanaCollector {
 	return &KibanaCollector{
 		kClient: kclient,
 	}
