@@ -59,8 +59,8 @@ jobs:
           context: .
           push: true
           tags: |
-            schmiddim/kibana-alert-exporter:${{ env.ref }}
-            schmiddim/kibana-alert-exporter:${{ env.commit_id }}
+            schmiddim/kibana-alert-exporter:ref${{ env.ref }}
+            schmiddim/kibana-alert-exporter:comm${{ env.commit_id }}
           platforms: linux/amd64 #,linux/arm64
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
