@@ -51,7 +51,6 @@ helm repo add schmiddim https://schmiddim.github.io/helm-charts/
 helm repo update
 helm upgrade kibana-alert-exporter schmiddim/kibana-alert-exporter --install
 ```
-
 # Configuration
 The following environment variables can be set to configure the exporter:  
 - `KIBANA_URL`: The URL of the Kibana instance.
