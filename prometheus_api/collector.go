@@ -2,9 +2,9 @@ package prometheus_api
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/schmiddim/kibana-alert-exporter/helper"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	"log"
-	"time"
 )
 
 type HealthWrapper struct {
@@ -16,12 +16,14 @@ type HealthWrapper struct {
 }
 
 type KibanaCollector struct {
-	kClient kibana_api.KclientInterface
+	kClient     kibana_api.KclientInterface
+	versionInfo *prometheus.Desc
 }
 
 func NewKibanaCollector(kclient kibana_api.KclientInterface) *KibanaCollector {
 	return &KibanaCollector{
-		kClient: kclient,
+		kClient:     kclient,
+		versionInfo: prometheus.NewDesc("exporter_info", "Build Information about the Exporter", []string{"code_version"}, nil),
 	}
 }
 func (collector *KibanaCollector) getHealthWrappers() []HealthWrapper {
@@ -55,6 +57,7 @@ func (collector *KibanaCollector) getHealthWrappers() []HealthWrapper {
 	return hws
 }
 func (collector *KibanaCollector) Describe(ch chan<- *prometheus.Desc) {
+
 	for _, hw := range collector.getHealthWrappers() {
 		ch <- hw.descNewAlert
 		ch <- hw.descActiveAlert
@@ -62,30 +65,40 @@ func (collector *KibanaCollector) Describe(ch chan<- *prometheus.Desc) {
 		ch <- hw.descRecoveredAlert
 
 	}
+	ch <- collector.versionInfo
 
 }
 func (collector *KibanaCollector) Collect(ch chan<- prometheus.Metric) {
 	hws := collector.getHealthWrappers()
 	for _, h := range hws {
-		m1, err := prometheus.NewConstMetricWithCreatedTimestamp(h.descNewAlert, prometheus.CounterValue, h.alertRule.LastRun.AlertsCount.Active, time.Now(), h.alertRule.LabelValues...)
+		m1, err := prometheus.NewConstMetric(h.descNewAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		m2, err := prometheus.NewConstMetricWithCreatedTimestamp(h.descActiveAlert, prometheus.CounterValue, h.alertRule.LastRun.AlertsCount.Active, time.Now(), h.alertRule.LabelValues...)
+		m2, err := prometheus.NewConstMetric(h.descActiveAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		m3, err := prometheus.NewConstMetricWithCreatedTimestamp(h.descIgnoredAlert, prometheus.CounterValue, h.alertRule.LastRun.AlertsCount.Active, time.Now(), h.alertRule.LabelValues...)
+		m3, err := prometheus.NewConstMetric(h.descIgnoredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}
-		m4, err := prometheus.NewConstMetricWithCreatedTimestamp(h.descRecoveredAlert, prometheus.CounterValue, h.alertRule.LastRun.AlertsCount.Active, time.Now(), h.alertRule.LabelValues...)
+		m4, err := prometheus.NewConstMetric(h.descRecoveredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		ch <- m1
 		ch <- m2
 		ch <- m3
 		ch <- m4
 
 	}
+	m5, err := prometheus.NewConstMetric(collector.versionInfo, prometheus.GaugeValue, 1, helper.GitCommit)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ch <- m5
 }
