@@ -8,7 +8,7 @@ COPY . .
 ENV GO111MODULE=on
 RUN go mod tidy
 # Build the Go app and strip debugging information to reduce size
-RUN CGO_ENABLED=0 GOOS=linux go build -buildvcs -ldflags="-s -w" -o /bin/action ./
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /bin/action ./
 
 FROM alpine:latest
 
