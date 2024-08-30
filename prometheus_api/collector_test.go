@@ -45,8 +45,8 @@ func TestKibanaCollector(t *testing.T) {
 		metrics = append(metrics, metric)
 	}
 
-	if len(metrics) != 4 {
-		t.Errorf("expected 4 metrics, got %d", len(metrics))
+	if len(metrics) != 5 {
+		t.Errorf("expected 5 metrics, got %d", len(metrics))
 	}
 
 }
