@@ -1,14 +1,12 @@
 package kibana_api
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type KclientInterface interface {
@@ -19,7 +17,6 @@ type KclientInterface interface {
 type Config struct {
 	KibanaBaseUri string
 	ApiKey        string
-	Insecure      bool
 }
 
 type Kclient struct {
@@ -66,7 +63,7 @@ func (c *Kclient) newRequest(endpoint string, method string) *http.Request {
 	return req
 }
 
-func NewKibanaClient(baseUri string, apiKey string, insecure bool) KclientInterface {
+func NewKibanaClient(baseUri string, apiKey string, client http.Client) KclientInterface {
 
 	if strings.HasSuffix(baseUri, "/") == false {
 		baseUri += "/"
@@ -74,19 +71,9 @@ func NewKibanaClient(baseUri string, apiKey string, insecure bool) KclientInterf
 	c := Config{
 		KibanaBaseUri: baseUri,
 		ApiKey:        apiKey,
-		Insecure:      insecure,
 	}
 
-	httpClient := http.Client{
-		Timeout: 2 * time.Second,
-	}
-	if insecure {
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
-		httpClient = http.Client{Transport: tr, Timeout: 2 * time.Second}
-	}
-
-	return &Kclient{Config: &c, client: &httpClient}
+	return &Kclient{Config: &c, client: &client}
 }
 
 func removeDuplicateStr(strSlice []string) []string {

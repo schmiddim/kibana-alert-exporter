@@ -1,13 +1,16 @@
 package prometheus_api
 
 import (
+	"crypto/tls"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
+	promClient "github.com/travelaudience/go-promhttp"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestKibanaCollector(t *testing.T) {
@@ -30,8 +33,13 @@ func TestKibanaCollector(t *testing.T) {
 	}))
 
 	defer server.Close()
-
-	client := kibana_api.NewKibanaClient(server.URL, "SuperSecret", false)
+	pClient := &promClient.Client{
+		Client: &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: false}}, Timeout: 2 * time.Second},
+		Registerer: prometheus.DefaultRegisterer,
+	}
+	httpClient, _ := pClient.ForRecipient("kibanaApi")
+	client := kibana_api.NewKibanaClient(server.URL, "SuperSecret", *httpClient)
 	collector := NewKibanaCollector(client)
 
 	ch := make(chan prometheus.Metric)

@@ -1,7 +1,10 @@
 package kibana_api
 
 import (
+	"crypto/tls"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	promClient "github.com/travelaudience/go-promhttp"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +13,7 @@ import (
 	"reflect"
 	"runtime"
 	"testing"
+	"time"
 )
 
 // equals fails the test if exp is not equal to act.
@@ -41,8 +45,13 @@ func TestKibanaResponse(t *testing.T) {
 	}))
 
 	defer server.Close()
-
-	apm := NewKibanaClient(server.URL, "SuperSecret", false)
+	pClient := &promClient.Client{
+		Client: &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, Timeout: 2 * time.Second},
+		Registerer: prometheus.DefaultRegisterer,
+	}
+	httpClient, _ := pClient.ForRecipient("kibanaApi")
+	apm := NewKibanaClient(server.URL, "SuperSecret", *httpClient)
 	kclient := apm.(*Kclient) // Type assert to *Kclient
 	kclient.client = server.Client()
 
@@ -91,8 +100,13 @@ func TestJsonResponse(t *testing.T) {
 	}))
 	// Close the server when test finishes
 	defer server.Close()
-
-	apm := NewKibanaClient(server.URL, "SuperSecret", false)
+	pClient := &promClient.Client{
+		Client: &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, Timeout: 2 * time.Second},
+		Registerer: prometheus.DefaultRegisterer,
+	}
+	httpClient, _ := pClient.ForRecipient("kibanaApi")
+	apm := NewKibanaClient(server.URL, "SuperSecret", *httpClient)
 	kclient := apm.(*Kclient) // Type assert to *Kclient
 	kclient.client = server.Client()
 	kclient.GetRules()
@@ -120,8 +134,14 @@ func TestHeaders(t *testing.T) {
 	}))
 	// Close the server when test finishes
 	defer server.Close()
+	pClient := &promClient.Client{
+		Client: &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: false}}, Timeout: 2 * time.Second},
+		Registerer: prometheus.DefaultRegisterer,
+	}
+	httpClient, _ := pClient.ForRecipient("kibanaApi")
 
-	apm := NewKibanaClient(server.URL, "SuperSecret", false)
+	apm := NewKibanaClient(server.URL, "SuperSecret", *httpClient)
 
 	kclient := apm.(*Kclient) // Type assert to *Kclient
 	kclient.client = server.Client()

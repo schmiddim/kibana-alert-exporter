@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"crypto/tls"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
+	prometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	"github.com/schmiddim/kibana-alert-exporter/prometheus_api"
 	"github.com/spf13/cobra"
+	promClient "github.com/travelaudience/go-promhttp"
 	"log"
 	"net/http"
 	"time"
@@ -22,7 +24,15 @@ var runCmd = &cobra.Command{
 	Short: "start the exporter",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		kibanaClient := kibana_api.NewKibanaClient(kibanaUrl, kibanaAuthToken, insecureTLS)
+
+		promClient := &promClient.Client{
+			Client: &http.Client{Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: insecureTLS}}, Timeout: 2 * time.Second},
+			Registerer: prometheus.DefaultRegisterer,
+		}
+		httpClient, _ := promClient.ForRecipient("kibanaApi")
+
+		kibanaClient := kibana_api.NewKibanaClient(kibanaUrl, kibanaAuthToken, *httpClient)
 
 		collector := prometheus_api.NewKibanaCollector(kibanaClient)
 		prometheus.MustRegister(collector)
