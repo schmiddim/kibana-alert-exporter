@@ -3,8 +3,8 @@ package kibana_api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -28,25 +28,25 @@ func (c *Kclient) doHttpRequest(req *http.Request) []byte {
 	res, err := c.client.Do(req)
 
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal(err)
 	}
 	if res.StatusCode != 200 {
-		log.Fatal().Msgf("Status Code is %d", res.StatusCode)
+		log.Fatalf("Status Code is %d", res.StatusCode)
 	}
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal(err)
 	}
 	if res.Body != nil {
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
-				log.Fatal().Msg("unable to close body")
+				log.Fatal("unable to close body")
 			}
 		}(res.Body)
 	}
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal().Err(err)
+	body, readErr := io.ReadAll(res.Body)
+	if readErr != nil {
+		log.Fatal(readErr)
 	}
 	return body
 }
@@ -58,7 +58,7 @@ func (c *Kclient) newRequest(endpoint string, method string) *http.Request {
 	req.Header.Set("kbn-xsrf", "true")
 	req.Header.Set("Authorization", fmt.Sprintf("ApiKey %s", c.Config.ApiKey))
 	if err != nil {
-		log.Fatal().Err(err)
+		log.Fatal(err)
 	}
 	return req
 }
@@ -104,7 +104,7 @@ func (c *Kclient) GetRules() []*AlertRule {
 		body := c.doHttpRequest(req)
 		jsonErr := json.Unmarshal(body, &response)
 		if jsonErr != nil {
-			log.Fatal().Err(jsonErr)
+			log.Fatal(jsonErr)
 		}
 		resultCount = len(response.AlertRules)
 		alertRules = append(alertRules, response.AlertRules...)
@@ -117,17 +117,16 @@ func (c *Kclient) GetRules() []*AlertRule {
 	}
 	trimmed := removeDuplicateStr(idStrings)
 	if len(trimmed) != len(alertRules) {
-		log.Error().Msgf("trimmed %d not equal to R  %d", len(trimmed), len(alertRules))
+		fmt.Println("trimmed not equal to R", len(trimmed), len(alertRules))
 		fmt.Println("All")
-		log.Error().Msg("All")
 		for _, l := range idStrings {
-			log.Error().Msg(l)
+			fmt.Println(l)
 
 		}
-		log.Error().Msg("============")
-		log.Error().Msg("Trimmed")
+		fmt.Println("============")
+		fmt.Println("Trimmed")
 		for _, l := range trimmed {
-			log.Error().Msg(l)
+			fmt.Println(l)
 
 		}
 	}
@@ -145,7 +144,7 @@ func (c *Kclient) GetAlertingHealth() AlertingHealthResponse {
 	jsonErr := json.Unmarshal(body, &response)
 
 	if jsonErr != nil {
-		log.Fatal().Err(jsonErr)
+		log.Fatal(jsonErr)
 	}
 	return response
 }

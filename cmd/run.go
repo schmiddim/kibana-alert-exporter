@@ -5,11 +5,11 @@ import (
 	"fmt"
 	prometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/zerolog/log"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	"github.com/schmiddim/kibana-alert-exporter/prometheus_api"
 	"github.com/spf13/cobra"
 	promClient "github.com/travelaudience/go-promhttp"
+	"log"
 	"net/http"
 	"time"
 )
@@ -37,7 +37,7 @@ var runCmd = &cobra.Command{
 		collector := prometheus_api.NewKibanaCollector(kibanaClient)
 		prometheus.MustRegister(collector)
 
-		log.Info().Msgf("http://localhost:%d/metrics", port)
+		fmt.Println(fmt.Sprintf("http://localhost:%d/metrics", port))
 		http.Handle("/metrics", promhttp.Handler())
 
 		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -47,10 +47,8 @@ var runCmd = &cobra.Command{
 				w.WriteHeader(503)
 			}
 		})
-		err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-		if err != nil {
-			log.Err(err)
-		}
+		log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
+
 	},
 }
 
