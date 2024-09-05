@@ -2,9 +2,9 @@ package prometheus_api
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/zerolog/log"
 	"github.com/schmiddim/kibana-alert-exporter/helper"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
-	"log"
 )
 
 type HealthWrapper struct {
@@ -73,21 +73,21 @@ func (collector *KibanaCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, h := range hws {
 		m1, err := prometheus.NewConstMetric(h.descNewAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err)
 		}
 
 		m2, err := prometheus.NewConstMetric(h.descActiveAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err)
 		}
 
 		m3, err := prometheus.NewConstMetric(h.descIgnoredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err)
 		}
 		m4, err := prometheus.NewConstMetric(h.descRecoveredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Err(err)
 		}
 
 		ch <- m1
@@ -98,7 +98,7 @@ func (collector *KibanaCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 	m5, err := prometheus.NewConstMetric(collector.versionInfo, prometheus.GaugeValue, 1, helper.GitCommit)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 	ch <- m5
 }

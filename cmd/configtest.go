@@ -3,8 +3,8 @@ package cmd
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/rs/zerolog/log"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	promClient "github.com/travelaudience/go-promhttp"
 	"net/http"
@@ -30,7 +30,8 @@ var configTestCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(string(out))
+
+		log.Info().Msg(string(out))
 	},
 }
 
