@@ -3,8 +3,9 @@ package kibana_api
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
+
 	"net/http"
 	"strings"
 )
@@ -117,16 +118,16 @@ func (c *Kclient) GetRules() []*AlertRule {
 	}
 	trimmed := removeDuplicateStr(idStrings)
 	if len(trimmed) != len(alertRules) {
-		fmt.Println("trimmed not equal to R", len(trimmed), len(alertRules))
+		log.Errorf("trimmed %d not equal to R %d", len(trimmed), len(alertRules))
 		fmt.Println("All")
 		for _, l := range idStrings {
-			fmt.Println(l)
+			log.Error(l)
 
 		}
-		fmt.Println("============")
-		fmt.Println("Trimmed")
+		log.Error("============")
+		log.Error("Trimmed")
 		for _, l := range trimmed {
-			fmt.Println(l)
+			log.Error(l)
 
 		}
 	}

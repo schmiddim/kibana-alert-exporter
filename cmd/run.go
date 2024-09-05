@@ -5,11 +5,13 @@ import (
 	"fmt"
 	prometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/schmiddim/kibana-alert-exporter/helper"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	"github.com/schmiddim/kibana-alert-exporter/prometheus_api"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	promClient "github.com/travelaudience/go-promhttp"
-	"log"
+
 	"net/http"
 	"time"
 )
@@ -37,7 +39,7 @@ var runCmd = &cobra.Command{
 		collector := prometheus_api.NewKibanaCollector(kibanaClient)
 		prometheus.MustRegister(collector)
 
-		fmt.Println(fmt.Sprintf("http://localhost:%d/metrics", port))
+		log.Infof("http://localhost:%d/metrics", port)
 		http.Handle("/metrics", promhttp.Handler())
 
 		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -55,4 +57,5 @@ var runCmd = &cobra.Command{
 func init() {
 	runCmd.PersistentFlags().IntVarP(&port, "port", "p", 9101, "port to use")
 	rootCmd.AddCommand(runCmd)
+	helper.LoggerInit()
 }
