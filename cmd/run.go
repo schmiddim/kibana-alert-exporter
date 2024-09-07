@@ -58,7 +58,7 @@ var runCmd = &cobra.Command{
 
 func init() {
 	runCmd.PersistentFlags().IntVarP(&port, "port", "p", 9101, "port to use")
-	runCmd.PersistentFlags().StringArrayVarP(&labelsToExport, "export-labelsToExport-from-tags", "l", []string{}, "add tags in the form key=val to kibana alerts to add them as labelsToExport to the metric")
+	runCmd.PersistentFlags().StringArrayVarP(&labelsToExport, "export-labels", "l", []string{}, "add tags in the form key=val to kibana alerts to add them as labelsToExport to the metric")
 
 	rootCmd.AddCommand(runCmd)
 	helper.LoggerInit()
