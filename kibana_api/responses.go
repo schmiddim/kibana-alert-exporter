@@ -1,6 +1,7 @@
 package kibana_api
 
 import (
+	"strings"
 	"time"
 )
 
@@ -11,15 +12,27 @@ type alertRulesFindResponse struct {
 	AlertRules []*AlertRule `json:"data"`
 }
 
+type Label struct {
+	Name       string
+	Value      string
+	Candidates []string
+}
+
+func NewLabelCandidate(name string) Label {
+
+	return Label{
+		Name: name,
+	}
+
+}
+
 type AlertRule struct {
-	Id          string   `json:"id"`
-	Name        string   `json:"name"`
-	Tags        []string `json:"tags"`
-	Enabled     bool     `json:"enabled"`
-	Running     bool     `json:"running"`
-	LabelValues []string
-	LabelNames  []string
-	LastRun     struct {
+	Id      string   `json:"id"`
+	Name    string   `json:"name"`
+	Tags    []string `json:"tags"`
+	Enabled bool     `json:"enabled"`
+	Running bool     `json:"running"`
+	LastRun struct {
 		Outcome     string `json:"outcome"`
 		AlertsCount struct {
 			New       float64 `json:"new"`
@@ -34,7 +47,7 @@ type AlertRule struct {
 	} `json:"params"`
 }
 
-func (r *AlertRule) ParseLabels() {
+func (r *AlertRule) GetLabels(labelsToExport []string) ([]string, []string) {
 	var names []string
 	var values []string
 
@@ -46,15 +59,29 @@ func (r *AlertRule) ParseLabels() {
 	names = append(names, "name")
 	names = append(names, "last_run_outcome")
 
-	//	for _, t := range r.Tags {
-	//		splits := strings.Split(t, "=")
-	//		if len(splits) == 2 {
-	//			names = append(names, splits[0])
-	//			values = append(values, splits[1])
-	//		}
-	//	}
-	r.LabelNames = names
-	r.LabelValues = values
+	var candidates []Label
+	for _, l := range labelsToExport {
+
+		c := NewLabelCandidate(l)
+		candidates = append(candidates, c)
+	}
+	for _, t := range r.Tags {
+		splits := strings.Split(t, "=")
+		if len(splits) == 2 {
+			for i, c := range candidates {
+				if c.Name == splits[0] {
+					candidates[i].Value = splits[1]
+				}
+			}
+		}
+
+	}
+	for _, c := range candidates {
+		values = append(values, c.Value)
+		names = append(names, c.Name)
+	}
+
+	return names, values
 
 }
 

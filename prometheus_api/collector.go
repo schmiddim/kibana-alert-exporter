@@ -16,14 +16,16 @@ type HealthWrapper struct {
 }
 
 type KibanaCollector struct {
-	kClient     kibana_api.KclientInterface
-	versionInfo *prometheus.Desc
+	kClient        kibana_api.KclientInterface
+	versionInfo    *prometheus.Desc
+	labelsToExport []string
 }
 
-func NewKibanaCollector(kclient kibana_api.KclientInterface) *KibanaCollector {
+func NewKibanaCollector(kclient kibana_api.KclientInterface, labelsToExport []string) *KibanaCollector {
 	return &KibanaCollector{
-		kClient:     kclient,
-		versionInfo: prometheus.NewDesc("exporter_info", "Build Information about the Exporter", []string{"code_version"}, nil),
+		kClient:        kclient,
+		versionInfo:    prometheus.NewDesc("exporter_info", "Build Information about the Exporter", []string{"code_version"}, nil),
+		labelsToExport: labelsToExport,
 	}
 }
 func (collector *KibanaCollector) getHealthWrappers() []HealthWrapper {
@@ -34,22 +36,23 @@ func (collector *KibanaCollector) getHealthWrappers() []HealthWrapper {
 		hw := HealthWrapper{
 			alertRule: *rule,
 		}
-		hw.descNewAlert = prometheus.NewDesc("new_alerts",
+		labelNames, _ := rule.GetLabels(collector.labelsToExport)
+		hw.descNewAlert = prometheus.NewDesc("kibana_new_alerts",
 			"New Alerts in Kibana",
-			rule.LabelNames, nil,
+			labelNames, nil,
 		)
-		hw.descActiveAlert = prometheus.NewDesc("active_alerts",
+		hw.descActiveAlert = prometheus.NewDesc("kibana_active_alerts",
 			"Active Alerts in Kibana",
-			rule.LabelNames, nil,
+			labelNames, nil,
 		)
 
-		hw.descIgnoredAlert = prometheus.NewDesc("ignored_alerts",
+		hw.descIgnoredAlert = prometheus.NewDesc("kibana_ignored_alerts",
 			"Ignored Alerts in Kibana",
-			rule.LabelNames, nil,
+			labelNames, nil,
 		)
-		hw.descRecoveredAlert = prometheus.NewDesc("recovered_alerts",
+		hw.descRecoveredAlert = prometheus.NewDesc("kibana_recovered_alerts",
 			"Recovered Alerts in Kibana",
-			rule.LabelNames, nil,
+			labelNames, nil,
 		)
 		hws = append(hws, hw)
 	}
@@ -71,21 +74,22 @@ func (collector *KibanaCollector) Describe(ch chan<- *prometheus.Desc) {
 func (collector *KibanaCollector) Collect(ch chan<- prometheus.Metric) {
 	hws := collector.getHealthWrappers()
 	for _, h := range hws {
-		m1, err := prometheus.NewConstMetric(h.descNewAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
+		_, labelValues := h.alertRule.GetLabels(collector.labelsToExport)
+		m1, err := prometheus.NewConstMetric(h.descNewAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, labelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		m2, err := prometheus.NewConstMetric(h.descActiveAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
+		m2, err := prometheus.NewConstMetric(h.descActiveAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, labelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		m3, err := prometheus.NewConstMetric(h.descIgnoredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
+		m3, err := prometheus.NewConstMetric(h.descIgnoredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, labelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}
-		m4, err := prometheus.NewConstMetric(h.descRecoveredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, h.alertRule.LabelValues...)
+		m4, err := prometheus.NewConstMetric(h.descRecoveredAlert, prometheus.GaugeValue, h.alertRule.LastRun.AlertsCount.Active, labelValues...)
 		if err != nil {
 			log.Fatal(err)
 		}

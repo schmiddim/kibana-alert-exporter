@@ -40,7 +40,7 @@ func TestKibanaCollector(t *testing.T) {
 	}
 	httpClient, _ := pClient.ForRecipient("kibanaApi")
 	client := kibana_api.NewKibanaClient(server.URL, "SuperSecret", *httpClient)
-	collector := NewKibanaCollector(client)
+	collector := NewKibanaCollector(client, []string{})
 
 	ch := make(chan prometheus.Metric)
 	go func() {

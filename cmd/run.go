@@ -17,6 +17,7 @@ import (
 )
 
 var port = 9101
+var labelsToExport []string
 
 var startTime = time.Now()
 var waitReadinessTime = 5 * time.Second
@@ -34,9 +35,10 @@ var runCmd = &cobra.Command{
 		}
 		httpClient, _ := promClient.ForRecipient("kibanaApi")
 
+		log.Info("labels to export:", labelsToExport)
 		kibanaClient := kibana_api.NewKibanaClient(kibanaUrl, kibanaAuthToken, *httpClient)
 
-		collector := prometheus_api.NewKibanaCollector(kibanaClient)
+		collector := prometheus_api.NewKibanaCollector(kibanaClient, labelsToExport)
 		prometheus.MustRegister(collector)
 
 		log.Infof("http://localhost:%d/metrics", port)
@@ -56,6 +58,8 @@ var runCmd = &cobra.Command{
 
 func init() {
 	runCmd.PersistentFlags().IntVarP(&port, "port", "p", 9101, "port to use")
+	runCmd.PersistentFlags().StringArrayVarP(&labelsToExport, "export-labelsToExport-from-tags", "l", []string{}, "add tags in the form key=val to kibana alerts to add them as labelsToExport to the metric")
+
 	rootCmd.AddCommand(runCmd)
 	helper.LoggerInit()
 }

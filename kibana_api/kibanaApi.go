@@ -79,7 +79,7 @@ func NewKibanaClient(baseUri string, apiKey string, client http.Client) KclientI
 
 func removeDuplicateStr(strSlice []string) []string {
 	allKeys := make(map[string]bool)
-	list := []string{}
+	var list []string
 	for _, item := range strSlice {
 		if _, value := allKeys[item]; !value {
 			allKeys[item] = true
@@ -91,7 +91,7 @@ func removeDuplicateStr(strSlice []string) []string {
 func (c *Kclient) GetRules() []*AlertRule {
 	resultCount := 1
 
-	idStrings := []string{}
+	var idStrings []string
 	var alertRules []*AlertRule
 	page := 1
 	for resultCount > 0 {
@@ -113,7 +113,6 @@ func (c *Kclient) GetRules() []*AlertRule {
 
 	}
 	for _, rule := range alertRules {
-		rule.ParseLabels()
 		idStrings = append(idStrings, rule.Id)
 	}
 	trimmed := removeDuplicateStr(idStrings)
