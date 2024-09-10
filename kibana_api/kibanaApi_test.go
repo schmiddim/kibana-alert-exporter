@@ -91,7 +91,7 @@ func TestKibanaResponse(t *testing.T) {
 func TestJsonResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		// Test request parameters
-		equals(t, req.URL.String(), "/api/alerting/rules/_find?per_page=100")
+		equals(t, req.URL.String(), "/api/alerting/rules/_find?per_page=100&sort_field=created_at")
 		// Send response to be tested
 		_, err := rw.Write([]byte(`{"oki":"doki"}`))
 		if err != nil {

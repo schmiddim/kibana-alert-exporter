@@ -12,15 +12,15 @@ type alertRulesFindResponse struct {
 	AlertRules []*AlertRule `json:"data"`
 }
 
-type Label struct {
+type label struct {
 	Name       string
 	Value      string
 	Candidates []string
 }
 
-func NewLabelCandidate(name string) Label {
+func newLabelCandidate(name string) label {
 
-	return Label{
+	return label{
 		Name: name,
 	}
 
@@ -59,10 +59,10 @@ func (r *AlertRule) GetLabels(labelsToExport []string) ([]string, []string) {
 	names = append(names, "name")
 	names = append(names, "last_run_outcome")
 
-	var candidates []Label
+	var candidates []label
 	for _, l := range labelsToExport {
 
-		c := NewLabelCandidate(l)
+		c := newLabelCandidate(l)
 		candidates = append(candidates, c)
 	}
 	for _, t := range r.Tags {

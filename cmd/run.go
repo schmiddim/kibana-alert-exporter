@@ -3,7 +3,7 @@ package cmd
 import (
 	"crypto/tls"
 	"fmt"
-	prometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/schmiddim/kibana-alert-exporter/helper"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	promClient "github.com/travelaudience/go-promhttp"
-
 	"net/http"
 	"time"
 )

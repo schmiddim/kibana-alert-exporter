@@ -66,6 +66,7 @@ func (c *Kclient) newRequest(endpoint string, method string) *http.Request {
 
 func NewKibanaClient(baseUri string, apiKey string, client http.Client) KclientInterface {
 
+	baseUri = strings.TrimSpace(baseUri)
 	if strings.HasSuffix(baseUri, "/") == false {
 		baseUri += "/"
 	}
@@ -77,27 +78,14 @@ func NewKibanaClient(baseUri string, apiKey string, client http.Client) KclientI
 	return &Kclient{Config: &c, client: &client}
 }
 
-func removeDuplicateStr(strSlice []string) []string {
-	allKeys := make(map[string]bool)
-	var list []string
-	for _, item := range strSlice {
-		if _, value := allKeys[item]; !value {
-			allKeys[item] = true
-			list = append(list, item)
-		}
-	}
-	return list
-}
 func (c *Kclient) GetRules() []*AlertRule {
 	resultCount := 1
-
-	var idStrings []string
 	var alertRules []*AlertRule
 	page := 1
 	for resultCount > 0 {
-		endpoint := fmt.Sprintf("api/alerting/rules/_find?per_page=100")
+		endpoint := fmt.Sprintf("api/alerting/rules/_find?per_page=100&sort_field=created_at")
 		if page > 1 {
-			endpoint = fmt.Sprintf("api/alerting/rules/_find?per_page=100&page=%d", page)
+			endpoint = fmt.Sprintf("api/alerting/rules/_find?per_page=100&page=%d&sort_field=created_at", page)
 		}
 
 		response := alertRulesFindResponse{}
@@ -111,24 +99,6 @@ func (c *Kclient) GetRules() []*AlertRule {
 		alertRules = append(alertRules, response.AlertRules...)
 		page = response.Page + 1
 
-	}
-	for _, rule := range alertRules {
-		idStrings = append(idStrings, rule.Id)
-	}
-	trimmed := removeDuplicateStr(idStrings)
-	if len(trimmed) != len(alertRules) {
-		log.Errorf("trimmed %d not equal to R %d", len(trimmed), len(alertRules))
-		fmt.Println("All")
-		for _, l := range idStrings {
-			log.Error(l)
-
-		}
-		log.Error("============")
-		log.Error("Trimmed")
-		for _, l := range trimmed {
-			log.Error(l)
-
-		}
 	}
 	return alertRules
 }
