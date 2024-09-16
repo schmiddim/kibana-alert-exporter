@@ -11,7 +11,7 @@ import (
 )
 
 type KclientInterface interface {
-	GetRules() []*AlertRule
+	GetRules() ([]*AlertRule, [][]byte)
 	GetAlertingHealth() AlertingHealthResponse
 }
 
@@ -78,8 +78,10 @@ func NewKibanaClient(baseUri string, apiKey string, client http.Client) KclientI
 	return &Kclient{Config: &c, client: &client}
 }
 
-func (c *Kclient) GetRules() []*AlertRule {
+func (c *Kclient) GetRules() ([]*AlertRule, [][]byte) {
 	resultCount := 1
+
+	var httpResponses [][]byte
 	var alertRules []*AlertRule
 	page := 1
 	for resultCount > 0 {
@@ -91,6 +93,8 @@ func (c *Kclient) GetRules() []*AlertRule {
 		response := alertRulesFindResponse{}
 		req := c.newRequest(endpoint, http.MethodGet)
 		body := c.doHttpRequest(req)
+
+		httpResponses = append(httpResponses, body)
 		jsonErr := json.Unmarshal(body, &response)
 		if jsonErr != nil {
 			log.Fatal(jsonErr)
@@ -100,7 +104,7 @@ func (c *Kclient) GetRules() []*AlertRule {
 		page = response.Page + 1
 
 	}
-	return alertRules
+	return alertRules, httpResponses
 }
 
 func (c *Kclient) GetAlertingHealth() AlertingHealthResponse {

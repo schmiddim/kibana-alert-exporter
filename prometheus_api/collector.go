@@ -31,7 +31,8 @@ func NewKibanaCollector(kclient kibana_api.KclientInterface, labelsToExport []st
 func (collector *KibanaCollector) getHealthWrappers() []HealthWrapper {
 	var hws []HealthWrapper
 
-	for _, rule := range collector.kClient.GetRules() {
+	rules, _ := collector.kClient.GetRules()
+	for _, rule := range rules {
 
 		hw := HealthWrapper{
 			alertRule: *rule,

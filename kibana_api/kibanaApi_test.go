@@ -55,7 +55,7 @@ func TestKibanaResponse(t *testing.T) {
 	kclient := apm.(*Kclient) // Type assert to *Kclient
 	kclient.client = server.Client()
 
-	rules := apm.GetRules()
+	rules, _ := apm.GetRules()
 	want := 1
 	got := len(rules)
 	if got != want {
