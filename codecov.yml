@@ -9,3 +9,4 @@ coverage:
   ignore:
     - "cmd"
     - "main.go"
+    - "fixtures"
