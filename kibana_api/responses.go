@@ -1,6 +1,7 @@
 package kibana_api
 
 import (
+	"strconv"
 	"strings"
 	"time"
 )
@@ -32,6 +33,7 @@ type AlertRule struct {
 	Tags    []string `json:"tags"`
 	Enabled bool     `json:"enabled"`
 	Running bool     `json:"running"`
+	MuteAll bool     `json:"mute_all"`
 	LastRun struct {
 		Outcome     string `json:"outcome"`
 		AlertsCount struct {
@@ -54,10 +56,12 @@ func (r *AlertRule) GetLabels(labelsToExport []string) ([]string, []string) {
 	values = append(values, r.Id)
 	values = append(values, r.Name)
 	values = append(values, r.LastRun.Outcome)
+	values = append(values, strconv.FormatBool(r.MuteAll))
 
 	names = append(names, "id")
 	names = append(names, "name")
 	names = append(names, "last_run_outcome")
+	names = append(names, "mute_all")
 
 	var candidates []label
 	for _, l := range labelsToExport {

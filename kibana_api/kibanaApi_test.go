@@ -24,6 +24,43 @@ func equals(tb testing.TB, exp, act interface{}) {
 		tb.FailNow()
 	}
 }
+func TestKibanaMuteAll(t *testing.T) {
+	rCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		fileName := "../fixtures/example-response-muted.json"
+		if rCount > 0 {
+			fileName = "../fixtures/example-response-empty.json"
+		}
+		b, err := os.ReadFile(fileName) // just pass the file name
+		if err != nil {
+			log.Fatal("text fixture not found")
+		}
+
+		rCount += 1
+		_, err = rw.Write(b)
+		if err != nil {
+			return
+		}
+	}))
+	defer server.Close()
+
+	pClient := &promClient.Client{
+		Client: &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}, Timeout: 2 * time.Second},
+		Registerer: prometheus.DefaultRegisterer,
+	}
+	httpClient, _ := pClient.ForRecipient("kibanaApi")
+	apm := NewKibanaClient(server.URL, "SuperSecret", *httpClient)
+	kclient := apm.(*Kclient) // Type assert to *Kclient
+	kclient.client = server.Client()
+
+	rules, _ := apm.GetRules()
+	got := rules[0].MuteAll
+
+	if got != true {
+		t.Errorf("got %t, want %t", got, true)
+	}
+}
 
 func TestKibanaResponse(t *testing.T) {
 	rCount := 0

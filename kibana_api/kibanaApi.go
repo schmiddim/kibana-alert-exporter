@@ -5,7 +5,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
-
 	"net/http"
 	"strings"
 )
