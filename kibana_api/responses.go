@@ -28,13 +28,15 @@ func newLabelCandidate(name string) label {
 }
 
 type AlertRule struct {
-	Id      string   `json:"id"`
-	Name    string   `json:"name"`
-	Tags    []string `json:"tags"`
-	Enabled bool     `json:"enabled"`
-	Running bool     `json:"running"`
-	MuteAll bool     `json:"mute_all"`
-	LastRun struct {
+	Id               string   `json:"id"`
+	Name             string   `json:"name"`
+	Tags             []string `json:"tags"`
+	Enabled          bool     `json:"enabled"`
+	Running          bool     `json:"running"`
+	MuteAll          bool     `json:"mute_all"`
+	MutedAlertIds    []string `json:"muted_alert_ids"`
+	HasUnMutedAlerts bool
+	LastRun          struct {
 		Outcome     string `json:"outcome"`
 		AlertsCount struct {
 			New       float64 `json:"new"`
@@ -57,11 +59,13 @@ func (r *AlertRule) GetLabels(labelsToExport []string) ([]string, []string) {
 	values = append(values, r.Name)
 	values = append(values, r.LastRun.Outcome)
 	values = append(values, strconv.FormatBool(r.MuteAll))
+	values = append(values, strconv.FormatBool(r.HasUnMutedAlerts))
 
 	names = append(names, "id")
 	names = append(names, "name")
 	names = append(names, "last_run_outcome")
 	names = append(names, "mute_all")
+	names = append(names, "has_not_muted_alerts")
 
 	var candidates []label
 	for _, l := range labelsToExport {

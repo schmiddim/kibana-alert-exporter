@@ -3,8 +3,10 @@ package cmd
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	es "github.com/schmiddim/kibana-alert-exporter/elasticsearch"
 	"github.com/schmiddim/kibana-alert-exporter/helper"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	"github.com/schmiddim/kibana-alert-exporter/prometheus_api"
@@ -37,7 +39,23 @@ var runCmd = &cobra.Command{
 		log.Info("labels to export:", labelsToExport)
 		kibanaClient := kibana_api.NewKibanaClient(kibanaUrl, kibanaAuthToken, *httpClient)
 
-		collector := prometheus_api.NewKibanaCollector(kibanaClient, labelsToExport)
+		collector := prometheus_api.NewKibanaCollector(kibanaClient, nil, labelsToExport)
+
+		if queryEsForAlerts == true {
+			cfg := elasticsearch.Config{
+				Addresses: []string{
+					elasticSearchUrl,
+				},
+				Username: elasticSearchUsername,
+				Password: elasticSearchPassword,
+			}
+			esClient, err := elasticsearch.NewClient(cfg)
+			if err != nil {
+				log.Fatal(err)
+			}
+			collector = prometheus_api.NewKibanaCollector(kibanaClient, es.NewActiveAlerts(esClient), labelsToExport)
+		}
+
 		prometheus.MustRegister(collector)
 
 		log.Infof("http://localhost:%d/metrics", port)

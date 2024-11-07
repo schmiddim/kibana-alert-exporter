@@ -10,7 +10,7 @@ func TestNoUnknowns(t *testing.T) {
 
 	r := AlertRule{Tags: []string{"severity=page", "owner=fooSqad", "logMetrics", "foo=bar"}}
 	names, values := r.GetLabels(labelsToExport)
-	if len(names) != len(labelsToExport)+4 {
+	if len(names) != len(labelsToExport)+5 {
 		t.Errorf("not enough Labels!")
 	}
 	ctr := 0

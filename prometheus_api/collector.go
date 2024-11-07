@@ -2,6 +2,7 @@ package prometheus_api
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	es "github.com/schmiddim/kibana-alert-exporter/elasticsearch"
 	"github.com/schmiddim/kibana-alert-exporter/helper"
 	"github.com/schmiddim/kibana-alert-exporter/kibana_api"
 	log "github.com/sirupsen/logrus"
@@ -17,13 +18,15 @@ type HealthWrapper struct {
 
 type KibanaCollector struct {
 	kClient        kibana_api.KclientInterface
+	esWrapper      *es.EsWrapper
 	versionInfo    *prometheus.Desc
 	labelsToExport []string
 }
 
-func NewKibanaCollector(kclient kibana_api.KclientInterface, labelsToExport []string) *KibanaCollector {
+func NewKibanaCollector(kclient kibana_api.KclientInterface, esWrapper *es.EsWrapper, labelsToExport []string) *KibanaCollector {
 	return &KibanaCollector{
 		kClient:        kclient,
+		esWrapper:      esWrapper,
 		versionInfo:    prometheus.NewDesc("exporter_info", "Build Information about the Exporter", []string{"code_version"}, nil),
 		labelsToExport: labelsToExport,
 	}
@@ -31,8 +34,25 @@ func NewKibanaCollector(kclient kibana_api.KclientInterface, labelsToExport []st
 func (collector *KibanaCollector) getHealthWrappers() []HealthWrapper {
 	var hws []HealthWrapper
 
+	var activeAlertInstancesIDS []es.ActiveAlert
+	if collector.esWrapper != nil {
+		activeAlertInstancesIDS = collector.esWrapper.GetInstanceIdsForActiveAlerts()
+
+	}
+
 	rules, _ := collector.kClient.GetRules()
 	for _, rule := range rules {
+		activeAlertCount := 0
+		for _, alert := range activeAlertInstancesIDS {
+			if alert.RuleUUID == rule.Id {
+				activeAlertCount += 1
+			}
+		}
+		if activeAlertCount == len(rule.MutedAlertIds) {
+			rule.HasUnMutedAlerts = false
+		} else {
+			rule.HasUnMutedAlerts = true
+		}
 
 		hw := HealthWrapper{
 			alertRule: *rule,
