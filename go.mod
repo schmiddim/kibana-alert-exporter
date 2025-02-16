@@ -1,7 +1,8 @@
 module github.com/schmiddim/kibana-alert-exporter
 
-go 1.21.1
-toolchain go1.22.5
+go 1.22
+
+toolchain go1.23.0
 
 require (
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
