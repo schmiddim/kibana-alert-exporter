@@ -1,5 +1,5 @@
 # Use a smaller base image for the build stage
-FROM golang:1.25.5-alpine AS builder
+FROM golang:1.26rc2-alpine AS builder
 
 WORKDIR /src
 COPY . .
