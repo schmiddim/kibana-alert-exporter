@@ -3,7 +3,7 @@ module github.com/schmiddim/kibana-alert-exporter
 go 1.23.0
 
 require (
-	github.com/elastic/go-elasticsearch/v8 v8.19.1
+	github.com/elastic/go-elasticsearch/v8 v8.19.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
